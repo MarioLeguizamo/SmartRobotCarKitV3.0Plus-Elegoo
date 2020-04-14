@@ -1,9 +1,0 @@
-{
-  "files.associations": {
-    "*.sh": "shellscript",
-    "array": "cpp",
-    "deque": "cpp",
-    "vector": "cpp",
-    "string_view": "cpp"
-  }
-}
