@@ -1,0 +1,6 @@
+{
+  "files.associations": {
+    "*.sh": "shellscript",
+    "type_traits": "cpp"
+  }
+}

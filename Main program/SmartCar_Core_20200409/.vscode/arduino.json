@@ -1,0 +1,6 @@
+{
+    "board": "arduino:avr:uno",
+    "programmer": "AVRISP mkII",
+    "sketch": "SmartCar_Core_20200409.ino",
+    "port": "COM5"
+}
