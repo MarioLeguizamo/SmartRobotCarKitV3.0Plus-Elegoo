@@ -1,5 +1,5 @@
 
-#include <IRremote.h>   //libraries
+#include <IRremote.h>   //Librerias
 #include <Servo.h>
 
 Servo myservo;          //Servo variables
@@ -109,6 +109,22 @@ int Distance_test() {
   return (int)Fdistance;
 }
 
+void ServoControl(uint8_t angleSetting)
+{
+  if (angleSetting > 175)
+  {
+    angleSetting = 175;
+  }
+  else if (angleSetting < 5)
+  {
+    angleSetting = 5;
+  }
+  myservo.attach(3);
+  myservo.write(angleSetting); //sets the servo position according to the  value
+  delay(500);
+  myservo.detach();
+}
+
 void evasorObstaculos() { 
     myservo.write(90);  //setservo position according to scaled value
     delay(500); 
@@ -153,7 +169,6 @@ void evasorObstaculos() {
 }
 
 void setup() {
-  //myservo.attach(3,700,2400);
   Serial.begin(9600);
   pinMode(IN1,OUTPUT);
   pinMode(IN2,OUTPUT);
@@ -161,6 +176,9 @@ void setup() {
   pinMode(IN4,OUTPUT);
   pinMode(ENA,OUTPUT);
   pinMode(ENB,OUTPUT);
+  pinMode(Echo, INPUT);    
+  pinMode(Trig, OUTPUT);
+  //myservo.attach(3,700,2400);
   stop();
   irrecv.enableIRIn();  
 }
