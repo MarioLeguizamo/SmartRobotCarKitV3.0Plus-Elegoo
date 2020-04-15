@@ -55,7 +55,7 @@ unsigned long preMillis;
  * BEGIN DEFINE FUNCTIONS
  */
 
- void forward(){ 
+void forward(){ 
   digitalWrite(ENA,HIGH);
   digitalWrite(ENB,HIGH);
   digitalWrite(IN1,HIGH);
@@ -107,9 +107,53 @@ int Distance_test() {
   float Fdistance = pulseIn(Echo, HIGH);  
   Fdistance= Fdistance / 58;       
   return (int)Fdistance;
-}  
+}
+
+void evasorObstaculos() { 
+    myservo.write(90);  //setservo position according to scaled value
+    delay(500); 
+    middleDistance = Distance_test();
+
+    if(middleDistance <= 40) {     
+      stop();
+      delay(500);                         
+      myservo.write(10);          
+      delay(1000);      
+      rightDistance = Distance_test();
+      
+      delay(500);
+      myservo.write(90);              
+      delay(1000);                                                  
+      myservo.write(180);              
+      delay(1000); 
+      leftDistance = Distance_test();
+      
+      delay(500);
+      myservo.write(90);              
+      delay(1000);
+      if(rightDistance > leftDistance) {
+        right();
+        delay(360);
+      }
+      else if(rightDistance < leftDistance) {
+        left();
+        delay(360);
+      }
+      else if((rightDistance <= 40) || (leftDistance <= 40)) {
+        back();
+        delay(180);
+      }
+      else {
+        forward();
+      }
+    }  
+    else {
+        forward();
+    }                     
+}
 
 void setup() {
+  //myservo.attach(3,700,2400);
   Serial.begin(9600);
   pinMode(IN1,OUTPUT);
   pinMode(IN2,OUTPUT);
@@ -129,16 +173,29 @@ void loop() {
     irrecv.resume();
     switch(val){
       case F: 
-      case UNKNOWN_F: forward(); break;
+      case UNKNOWN_F: 
+        forward(); 
+        break;
       case B: 
-      case UNKNOWN_B: back(); break;
+      case UNKNOWN_B: 
+        back(); 
+        break;
       case L: 
-      case UNKNOWN_L: left(); break;
-      case R: 
-      case UNKNOWN_R: right();break;
+      case UNKNOWN_L: 
+        left(); 
+        break;
+      case R:
+      case UNKNOWN_R: 
+        right();
+        break;
       case S: 
-      case UNKNOWN_S: stop(); break;
-      default: break;
+      case UNKNOWN_S: 
+        stop(); 
+        break;
+      //case KEY1: 
+      //case 4294967295: evasorObstaculos(); break;
+      default: 
+        break;
     }
   }
   else{
