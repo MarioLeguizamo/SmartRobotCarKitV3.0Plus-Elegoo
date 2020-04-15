@@ -1,6 +1,10 @@
-//www.elegoo.com
 
-#include <IRremote.h>
+#include <IRremote.h>   //libraries
+#include <Servo.h>
+
+Servo myservo;          //Servo variables
+int Echo = A4;  
+int Trig = A5; 
 
 ////////// IR REMOTE CODES //////////
 #define F 16736925	// FORWARD
@@ -37,6 +41,10 @@
 #define IN3 9	  // Right wheel reverse
 #define IN4 11	// Right wheel forward
 #define carSpeed 250	// initial speed of car >=0 to <=255
+
+int rightDistance = 0;
+int leftDistance = 0;
+int middleDistance = 0;
 
 IRrecv irrecv(RECV_PIN);
 decode_results results;
@@ -88,6 +96,18 @@ void stop(){
   digitalWrite(ENB, LOW);
   Serial.println("STOP!");  
 }
+
+//Ultrasonic distance measurement Sub function
+int Distance_test() {
+  digitalWrite(Trig, LOW);   
+  delayMicroseconds(2);
+  digitalWrite(Trig, HIGH);  
+  delayMicroseconds(20);
+  digitalWrite(Trig, LOW);   
+  float Fdistance = pulseIn(Echo, HIGH);  
+  Fdistance= Fdistance / 58;       
+  return (int)Fdistance;
+}  
 
 void setup() {
   Serial.begin(9600);
