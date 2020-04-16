@@ -9,7 +9,7 @@
 #define R 16761405	          // Derecha
 #define S 16712445	          // Alto
 
-#define UNKNOWN_F 5316027		  // Adelante
+#define UNKNOWN_F 5316027     // Adelante
 #define UNKNOWN_B 2747854299	// Atras
 #define UNKNOWN_L 1386468383	// Izquierda
 #define UNKNOWN_R 553536955		// Derecha
@@ -37,15 +37,20 @@
 #define MOTOR_DER_ATRAS_PIN 9	    // Motor derecho atras
 #define MOTOR_DER_ADELA_PIN 11	  // Motor derecho adelante
 
-// Pin del infrarrojo
-#define INFRARROJO_PIN 12         // Infrarrojo
+// Pin del receptor infrarrojo
+#define INFRARROJO_PIN 12         // Receptor infrarrojo
 
 // Pines del sensor ultrasonico
-#define ULTRASONIC_ECHO_PIN A4    // Echo
-#define ULTRASONIC_TRIG_PIN A5    // Trig
+#define ULTRASONIC_ECHO_PIN A4    // Sensor ultrasonico receptor echo
+#define ULTRASONIC_TRIG_PIN A5    // sensor ultrasonico transmisor trig
 
 // Pin del servomotor
 #define SERVO_PIN 3               // Servomotor
+
+// Pines infrarrojos seguidor de línea
+#define INFRARROJO_IZQUI_PIN 2    // Sensor infrarrojo izquierdo
+#define INFRARROJO_MEDIO_PIN 4    // Sensor infrarrojo medio
+#define INFRARROJO_DEREC_PIN 10   // Sensor infrarrojo derecho
 
 /************************************VARIABLES****************************/
 // Variables motores
@@ -67,49 +72,49 @@ Servo servo;
 
 /************************************FUNCIONES****************************/
 // Funciones para el movimiento del robot
-void adelante(int velocidad){ 
+void adelante(int velocidad, int tiempoMotor) { 
   digitalWrite(MOTOR_IZQ_ADELA_PIN,HIGH);
   digitalWrite(MOTOR_IZQ_ATRAS_PIN,LOW);
   digitalWrite(MOTOR_DER_ATRAS_PIN,LOW);
   digitalWrite(MOTOR_DER_ADELA_PIN,HIGH);
   analogWrite(ENABLE_MOTOR_IZQ_PIN,velocidad);
   analogWrite(ENABLE_MOTOR_DER_PIN,velocidad);
-  Serial.println("go forward!");
+  delay(tiempoMotor);
 }
-void atras(int velocidad){
+void atras(int velocidad, int tiempoMotor) {
   digitalWrite(MOTOR_IZQ_ADELA_PIN,LOW);
   digitalWrite(MOTOR_IZQ_ATRAS_PIN,HIGH);
   digitalWrite(MOTOR_DER_ATRAS_PIN,HIGH);
   digitalWrite(MOTOR_DER_ADELA_PIN,LOW);
   analogWrite(ENABLE_MOTOR_IZQ_PIN,velocidad);
   analogWrite(ENABLE_MOTOR_DER_PIN,velocidad);
-  Serial.println("go back!");
+  delay(tiempoMotor);
 }
-void izquierda(int velocidad){
+void izquierda(int velocidad, int tiempoMotor) {
   digitalWrite(MOTOR_IZQ_ADELA_PIN,LOW);
   digitalWrite(MOTOR_IZQ_ATRAS_PIN,HIGH);
   digitalWrite(MOTOR_DER_ATRAS_PIN,LOW);
   digitalWrite(MOTOR_DER_ADELA_PIN,HIGH);
   analogWrite(ENABLE_MOTOR_IZQ_PIN,velocidad);
   analogWrite(ENABLE_MOTOR_DER_PIN,velocidad); 
-  Serial.println("go left!");
+  delay(tiempoMotor);
 }
-void derecha(int velocidad){
+void derecha(int velocidad, int tiempoMotor) {
   digitalWrite(MOTOR_IZQ_ADELA_PIN,HIGH);
   digitalWrite(MOTOR_IZQ_ATRAS_PIN,LOW);
   digitalWrite(MOTOR_DER_ATRAS_PIN,HIGH);
   digitalWrite(MOTOR_DER_ADELA_PIN,LOW);
   analogWrite(ENABLE_MOTOR_IZQ_PIN,velocidad);
   analogWrite(ENABLE_MOTOR_DER_PIN,velocidad);
-  Serial.println("go right!");
+  delay(tiempoMotor);
 }
-void alto(){
+void alto() {
   digitalWrite(ENABLE_MOTOR_IZQ_PIN, LOW);
   digitalWrite(ENABLE_MOTOR_DER_PIN, LOW);
   Serial.println("STOP!");  
 }
 
-//Ultrasonic distance measurement Sub function
+// Funcion para medir distancia con sensor ultrasonico
 int medirDistancia() {
   digitalWrite(ULTRASONIC_TRIG_PIN, LOW);   
   delayMicroseconds(2);
@@ -121,62 +126,64 @@ int medirDistancia() {
   return (int)distancia;
 }
 
-void controlServo(uint8_t angulo)
-{
-  if (angulo > 175)
-  {
+// Funcion para controlar el servomotor
+void controlServo(uint8_t angulo, int tiempoServo) {
+  if (angulo > 175) {
     angulo = 175;
   }
-  else if (angulo < 5)
-  {
+  else if (angulo < 5) {
     angulo = 5;
   }
   servo.attach(SERVO_PIN);
   servo.write(angulo); //sets the servo position according to the  value
-  //delay(500);
+  delay(tiempoServo);
   servo.detach();
 }
 
+// Funcion escaneo ultrasonico inicial
+void escaneoUltrasonico() {
+  for(int i=5;i<=175;i=i+5) {
+    controlServo(i,35);
+  }
+  for(int i=175;i>=5;i=i-5) {
+    controlServo(i,35);
+  }
+  controlServo(90,150);
+}
+
+// Funcion del modo evasor de obstaculos
 void evasorObstaculos() { 
-    servo.write(90);  //setservo position according to scaled value
-    delay(500); 
+    controlServo(90, 500);
     distanciaMedia = medirDistancia();
 
     if(distanciaMedia <= 40) {     
       alto();
       delay(500);                         
-      servo.write(10);          
-      delay(1000);      
+      controlServo(10, 1000);      
       distanciaDerecha = medirDistancia();
       
       delay(500);
-      servo.write(90);              
-      delay(1000);                                                  
-      servo.write(180);              
-      delay(1000); 
+      controlServo(90, 1000);                                                  
+      controlServo(180, 1000); 
       distanciaIzquierda = medirDistancia();
       
       delay(500);
-      servo.write(90);              
-      delay(1000);
+      controlServo(90, 1000); 
       if(distanciaDerecha > distanciaIzquierda) {
-        derecha(velocidadMaxima);
-        delay(360);
+        derecha(velocidadMaxima,360);
       }
       else if(distanciaDerecha < distanciaIzquierda) {
-        izquierda(velocidadMaxima);
-        delay(360);
+        izquierda(velocidadMaxima,360);
       }
       else if((distanciaDerecha <= 40) || (distanciaIzquierda <= 40)) {
-        atras(velocidadMaxima);
-        delay(180);
+        atras(velocidadMaxima,180);
       }
       else {
-        adelante(velocidadMaxima);
+        adelante(velocidadMaxima,0);
       }
     }  
     else {
-        adelante(velocidadMaxima);
+        adelante(velocidadMaxima,0);
     }                     
 }
 
@@ -190,33 +197,34 @@ void setup() {
   pinMode(ENABLE_MOTOR_DER_PIN,OUTPUT);
   pinMode(ULTRASONIC_ECHO_PIN, INPUT);    
   pinMode(ULTRASONIC_TRIG_PIN, OUTPUT);
-  //servo.attach(3,700,2400);
+  infrarrojo.enableIRIn();
   alto();
-  infrarrojo.enableIRIn();  
+  escaneoUltrasonico();
 }
 
 void loop() {
-  if (infrarrojo.decode(&resultadoDecodificado)){ 
+  //evasorObstaculos();
+  if (infrarrojo.decode(&resultadoDecodificado)) { 
     milisegundosTiempo = millis();
-    valorDecodificado = resultadoDecodificado.value;
-    Serial.println(valorDecodificado);
+    //valorDecodificado = resultadoDecodificado.value;
+    Serial.println(resultadoDecodificado.value);
     infrarrojo.resume();
-    switch(valorDecodificado){
+    switch(resultadoDecodificado.value){
       case F: 
       case UNKNOWN_F: 
-        adelante(velocidadMaxima); 
+        adelante(velocidadMaxima,0); 
         break;
       case B: 
       case UNKNOWN_B: 
-        atras(velocidadMaxima); 
+        atras(velocidadMaxima,0);
         break;
       case L: 
       case UNKNOWN_L: 
-        izquierda(velocidadMaxima); 
+        izquierda(velocidadMaxima,0); 
         break;
       case R:
       case UNKNOWN_R: 
-        derecha(velocidadMaxima);
+        derecha(velocidadMaxima,0);
         break;
       case S: 
       case UNKNOWN_S: 
@@ -228,7 +236,7 @@ void loop() {
         break;
     }
   }
-  else{
+  else {
     if(millis() - milisegundosTiempo > 500){
       alto();
       milisegundosTiempo = millis();
