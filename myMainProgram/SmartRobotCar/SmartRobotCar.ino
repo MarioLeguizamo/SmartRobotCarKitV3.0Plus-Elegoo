@@ -12,7 +12,7 @@
 #define UNKNOWN_F 5316027     // Adelante
 #define UNKNOWN_B 2747854299	// Atras
 #define UNKNOWN_L 1386468383	// Izquierda
-#define UNKNOWN_R 553536955		// Derecha
+#define UNKNOWN_R 553536955   // Derecha
 #define UNKNOWN_S 3622325019	// Alto
 
 #define KEY_1 16738455        // 1
@@ -33,8 +33,8 @@
 #define ENABLE_MOTOR_IZQ_PIN 5    // Potencia motor izquierdo
 #define ENABLE_MOTOR_DER_PIN 6	  // Potencia motor derecho
 #define MOTOR_IZQ_ADELA_PIN 7     // Motor izquierdo adelante
-#define MOTOR_IZQ_ATRAS_PIN 8	    // Motor izquierdo atras
-#define MOTOR_DER_ATRAS_PIN 9	    // Motor derecho atras
+#define MOTOR_IZQ_ATRAS_PIN 8     // Motor izquierdo atras
+#define MOTOR_DER_ATRAS_PIN 9     // Motor derecho atras
 #define MOTOR_DER_ADELA_PIN 11	  // Motor derecho adelante
 
 // Pin del receptor infrarrojo
@@ -59,7 +59,7 @@ const int velocidadMaxima = 255;
 // Variables infrarrojo
 IRrecv infrarrojo(INFRARROJO_PIN);
 decode_results resultadoDecodificado;
-unsigned long valorDecodificado;
+//unsigned long valorDecodificado;
 unsigned long milisegundosTiempo;
 
 // Variables sensor ultrasonico
@@ -199,42 +199,42 @@ void setup() {
   pinMode(ULTRASONIC_TRIG_PIN, OUTPUT);
   infrarrojo.enableIRIn();
   alto();
-  escaneoUltrasonico();
+  controlServo(90,150);
+  //escaneoUltrasonico();
 }
 
 void loop() {
-  //evasorObstaculos();
   if (infrarrojo.decode(&resultadoDecodificado)) { 
     milisegundosTiempo = millis();
-    //valorDecodificado = resultadoDecodificado.value;
     Serial.println(resultadoDecodificado.value);
-    infrarrojo.resume();
     switch(resultadoDecodificado.value){
       case F: 
       case UNKNOWN_F: 
-        adelante(velocidadMaxima,0); 
+        adelante(velocidadMaxima,500); 
         break;
       case B: 
       case UNKNOWN_B: 
-        atras(velocidadMaxima,0);
+        atras(velocidadMaxima,500);
         break;
       case L: 
       case UNKNOWN_L: 
-        izquierda(velocidadMaxima,0); 
+        izquierda(velocidadMaxima,500);
         break;
       case R:
       case UNKNOWN_R: 
-        derecha(velocidadMaxima,0);
+        derecha(velocidadMaxima,500);
         break;
       case S: 
       case UNKNOWN_S: 
         alto(); 
         break;
-      //case KEY1: 
-      //case 4294967295: evasorObstaculos(); break;
+      case KEY_1: 
+        evasorObstaculos(); 
+        break;
       default: 
         break;
     }
+    infrarrojo.resume();
   }
   else {
     if(millis() - milisegundosTiempo > 500){
