@@ -56,19 +56,24 @@
 // Variables motores
 const int velocidadMaxima = 255;
 
-// Variables infrarrojo
+// Variables control remoto infrarrojo
 IRrecv infrarrojo(INFRARROJO_PIN);
 decode_results resultadoDecodificado;
 //unsigned long valorDecodificado;
-unsigned long milisegundosTiempo;
+//unsigned long milisegundosTiempo;
 
 // Variables sensor ultrasonico
-int distanciaDerecha = 0;
 int distanciaIzquierda = 0;
 int distanciaMedia = 0;
+int distanciaDerecha = 0;
 
 // Variables servomotor
 Servo servo;
+
+// Variables sensores infrarojos
+int sensorIzquierdo = 0;
+int sensorMedio = 0;
+int sensorDerecho = 0;
 
 /************************************FUNCIONES****************************/
 // Funciones para el movimiento del robot
@@ -135,7 +140,7 @@ void controlServo(uint8_t angulo, int tiempoServo) {
     angulo = 5;
   }
   servo.attach(SERVO_PIN);
-  servo.write(angulo); //sets the servo position according to the  value
+  servo.write(angulo);
   delay(tiempoServo);
   servo.detach();
 }
@@ -187,6 +192,35 @@ void evasorObstaculos() {
     }                     
 }
 
+void leerSensores(bool debug) {
+  sensorIzquierdo = digitalRead(INFRARROJO_IZQUI_PIN);
+  sensorMedio = digitalRead(INFRARROJO_MEDIO_PIN);
+  sensorDerecho = digitalRead(INFRARROJO_DEREC_PIN);
+  if(debug) {
+    Serial.print("Izquierdo: ");
+    Serial.println(sensorIzquierdo);
+    Serial.print("Medio    : ");
+    Serial.println(sensorMedio);
+    Serial.print("Derecho  : ");
+    Serial.println(sensorDerecho);
+    Serial.println();
+  }
+}
+
+// Funcion del modo seguidor de linea
+void seguidorLinea() {
+  leerSensores(false);
+  if(!sensorMedio){
+    adelante(velocidadMaxima,0);
+  }
+  else if(!sensorDerecho) { 
+    derecha(velocidadMaxima,0);                            
+  }   
+  else if(!sensorIzquierdo) {
+    izquierda(velocidadMaxima,0);
+  }
+}
+
 void setup() {
   Serial.begin(9600);
   pinMode(MOTOR_IZQ_ADELA_PIN,OUTPUT);
@@ -195,8 +229,11 @@ void setup() {
   pinMode(MOTOR_DER_ADELA_PIN,OUTPUT);
   pinMode(ENABLE_MOTOR_IZQ_PIN,OUTPUT);
   pinMode(ENABLE_MOTOR_DER_PIN,OUTPUT);
-  pinMode(ULTRASONIC_ECHO_PIN, INPUT);    
   pinMode(ULTRASONIC_TRIG_PIN, OUTPUT);
+  pinMode(ULTRASONIC_ECHO_PIN, INPUT);
+  pinMode(INFRARROJO_IZQUI_PIN,INPUT);
+  pinMode(INFRARROJO_DEREC_PIN,INPUT);
+  pinMode(INFRARROJO_MEDIO_PIN,INPUT);
   infrarrojo.enableIRIn();
   alto();
   controlServo(90,150);
@@ -204,42 +241,53 @@ void setup() {
 }
 
 void loop() {
-  if (infrarrojo.decode(&resultadoDecodificado)) { 
-    milisegundosTiempo = millis();
+  while (infrarrojo.decode(&resultadoDecodificado)) { 
+    //milisegundosTiempo = millis();
+    infrarrojo.decode(&resultadoDecodificado);
     Serial.println(resultadoDecodificado.value);
     switch(resultadoDecodificado.value){
       case F: 
       case UNKNOWN_F: 
-        adelante(velocidadMaxima,500); 
+        adelante(velocidadMaxima,500);
+        alto(); 
         break;
       case B: 
       case UNKNOWN_B: 
         atras(velocidadMaxima,500);
+        alto();
         break;
       case L: 
       case UNKNOWN_L: 
         izquierda(velocidadMaxima,500);
+        alto();
         break;
       case R:
       case UNKNOWN_R: 
         derecha(velocidadMaxima,500);
+        alto();
         break;
       case S: 
       case UNKNOWN_S: 
         alto(); 
         break;
-      case KEY_1: 
-        evasorObstaculos(); 
+      /*
+      case KEY_1:  
+        evasorObstaculos();
         break;
+      case KEY_2: 
+        seguidorLinea();
+        break;  
+      */
       default: 
         break;
     }
     infrarrojo.resume();
   }
+  /*
   else {
     if(millis() - milisegundosTiempo > 500){
       alto();
       milisegundosTiempo = millis();
     }
-  }
+  }*/
 } 
