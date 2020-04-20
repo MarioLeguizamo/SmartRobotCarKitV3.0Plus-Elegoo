@@ -2,6 +2,9 @@
 #include <IRremote.h>       // Libreria control remoto infrarrojo
 #include <Servo.h>          // Libreria servomotor
 
+#include <Wire.h>
+#include "rgb_lcd.h"
+
 /********************** CODIGOS CONTROL REMOTE INFRARROJO *****************/
 #define F 16736925	          // Adelante
 #define B 16754775	          // Atras
@@ -74,6 +77,12 @@ Servo servo;
 int sensorIzquierdo = 0;
 int sensorMedio = 0;
 int sensorDerecho = 0;
+
+// Variables LCD RGB
+rgb_lcd lcd;
+const int colorR = 100;
+const int colorG = 0;
+const int colorB = 255;
 
 /************************************FUNCIONES****************************/
 // Funciones para el movimiento del robot
@@ -235,12 +244,19 @@ void setup() {
   pinMode(INFRARROJO_DEREC_PIN,INPUT);
   pinMode(INFRARROJO_MEDIO_PIN,INPUT);
   infrarrojo.enableIRIn();
+  //lcd.begin(16, 2);
+  //lcd.setRGB(colorR, colorG, colorB);
+  //lcd.print("    ROBOTINO");
+  //delay(1000);
   alto();
   controlServo(90,150);
-  //escaneoUltrasonico();
+  escaneoUltrasonico();
 }
 
 void loop() {
+  //lcd.setCursor(0, 1);
+  //lcd.print(millis() / 1000);
+  //delay(100);
   while (infrarrojo.decode(&resultadoDecodificado)) { 
     //milisegundosTiempo = millis();
     infrarrojo.decode(&resultadoDecodificado);
@@ -270,14 +286,21 @@ void loop() {
       case UNKNOWN_S: 
         alto(); 
         break;
-      /*
-      case KEY_1:  
-        evasorObstaculos();
-        break;
+      
+      case KEY_1:
+        //delay(500);
+        while(infrarrojo.decode(&resultadoDecodificado)) {
+           evasorObstaculos();
+           //while(!infrarrojo.decode(&resultadoDecodificado));
+        }
+        //break;
       case KEY_2: 
-        seguidorLinea();
+        //delay(500);
+        while(infrarrojo.decode(&resultadoDecodificado)) {
+          seguidorLinea();
+          //while(!infrarrojo.decode(&resultadoDecodificado));
+        }
         break;  
-      */
       default: 
         break;
     }
