@@ -286,20 +286,15 @@ void loop() {
       case UNKNOWN_S: 
         alto(); 
         break;
-      
       case KEY_1:
-        //delay(500);
-        while(infrarrojo.decode(&resultadoDecodificado)) {
-           evasorObstaculos();
-           //while(!infrarrojo.decode(&resultadoDecodificado));
-        }
-        //break;
+        do {
+          evasorObstaculos();
+        } while(!infrarrojo.decode(&resultadoDecodificado));
+        break;
       case KEY_2: 
-        //delay(500);
-        while(infrarrojo.decode(&resultadoDecodificado)) {
+        do {
           seguidorLinea();
-          //while(!infrarrojo.decode(&resultadoDecodificado));
-        }
+        } while(!infrarrojo.decode(&resultadoDecodificado)) ;
         break;  
       default: 
         break;
