@@ -1,5 +1,7 @@
 ## Arduino smart robot
 
+![](https://raw.githubusercontent.com/MarioLeguizamo/Elegoo-SmartRobotCarKitV3.0Plus/develop/Images/ROBOT.INO.jpg)
+
 Modos de control:
 
 1. Control autónomo
