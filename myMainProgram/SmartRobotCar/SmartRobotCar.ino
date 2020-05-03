@@ -250,7 +250,7 @@ void setup() {
   //delay(1000);
   alto();
   controlServo(90,150);
-  escaneoUltrasonico();
+  //escaneoUltrasonico();
 }
 
 void loop() {
@@ -290,11 +290,16 @@ void loop() {
         do {
           evasorObstaculos();
         } while(!infrarrojo.decode(&resultadoDecodificado));
+        alto();
         break;
       case KEY_2: 
         do {
           seguidorLinea();
-        } while(!infrarrojo.decode(&resultadoDecodificado)) ;
+          if(infrarrojo.decode(&resultadoDecodificado)) {
+            alto();
+          }
+        } while(infrarrojo.decode(&resultadoDecodificado));
+        alto();
         break;  
       default: 
         break;
